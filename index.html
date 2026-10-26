@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MangoRipe-Bot — Live App</title>
+<style>
+:root{--green:#2e9e5b;--green-d:#1f7a44;--orange:#f58a1f;--cream:#fff8ec;--ink:#2b2b2b;--mute:#6b7280;--line:#e5e7eb}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#d9e4d3;color:var(--ink);display:flex;justify-content:center;align-items:center}
+#app{width:100%;max-width:430px;height:100dvh;max-height:900px;background:#eef3e6;display:flex;flex-direction:column;position:relative;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.18)}
+@media(min-width:480px){#app{border-radius:24px;height:min(900px,96dvh)}}
+header{background:linear-gradient(135deg,var(--green),var(--green-d));color:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px;flex:none}
+header .av{width:40px;height:40px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:22px}
+header h1{font-size:16px;margin:0;font-weight:700}
+header small{opacity:.85;font-size:12px}
+header .sp{flex:1}
+header button{background:rgba(255,255,255,.18);border:0;color:#fff;border-radius:10px;min-width:44px;min-height:36px;font-size:12px;cursor:pointer}
+#chat{flex:1;overflow-y:auto;padding:12px 10px 18px;display:flex;flex-direction:column;gap:8px;scroll-behavior:smooth;background:radial-gradient(circle at 20% 10%,#f6f9ef 0,#eef3e6 60%)}
+.row{display:flex;gap:6px;align-items:flex-end;max-width:100%}
+.row.user{justify-content:flex-end}
+.row .av{width:28px;height:28px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:15px;flex:none;box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.col{display:flex;flex-direction:column;gap:4px;max-width:86%;min-width:0}
+.bubble{background:#fff;border-radius:16px 16px 16px 4px;padding:9px 12px;font-size:14.5px;line-height:1.45;box-shadow:0 1px 2px rgba(0,0,0,.08);overflow-wrap:anywhere}
+.row.user .bubble{background:#d8f5c2;border-radius:16px 16px 4px 16px}
+.bubble b{font-weight:700}
+.bubble .t{display:block;text-align:right;font-size:10.5px;color:var(--mute);margin-top:2px}
+.bubble img.ph{display:block;width:100%;border-radius:10px;margin-bottom:4px}
+.tips{margin:6px 0 0;padding:0;list-style:none}
+.tips li{display:flex;gap:8px;padding:4px 0}
+.kb{display:flex;flex-direction:column;gap:4px}
+.kbrow{display:flex;gap:4px}
+.kb button{flex:1;min-height:44px;border:0;border-radius:12px;background:rgba(46,158,91,.14);color:var(--green-d);font-weight:600;font-size:14px;cursor:pointer;padding:8px 10px;font-family:inherit}
+.kb button:active{background:rgba(46,158,91,.3)}
+.kb.done button:not(.sel){opacity:.45}
+.kb.done button.sel{background:var(--green);color:#fff}
+.kb.done:not(.multi) button{pointer-events:none}
+.typing{display:inline-flex;gap:4px;padding:12px 14px}
+.typing i{width:7px;height:7px;border-radius:50%;background:#9aa;animation:b 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-4px);opacity:1}}
+.card h3{margin:0 0 6px;font-size:15px}
+.bars{display:flex;flex-direction:column;gap:5px;margin-top:6px}
+.bar{display:grid;grid-template-columns:62px 1fr 38px;gap:6px;align-items:center;font-size:12px}
+.bar span.tr{height:8px;border-radius:5px;background:#eceeea;overflow:hidden}
+.bar span.tr i{display:block;height:100%;border-radius:5px}
+canvas.mask{width:100%;border-radius:10px;display:block;image-rendering:auto}
+.res{display:flex;gap:12px;align-items:center;margin-bottom:6px}
+.ring{--p:80;width:86px;height:86px;border-radius:50%;background:conic-gradient(var(--c,var(--green)) calc(var(--p)*1%),#e7eae2 0);display:grid;place-items:center;flex:none}
+.ring div{width:66px;height:66px;border-radius:50%;background:#fff;display:grid;place-items:center;font-weight:800;font-size:20px}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;color:#fff;font-weight:700;font-size:13px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:13px;margin-top:8px}
+.kv dt{color:var(--mute)}.kv dd{margin:0;font-weight:600}
+.note{font-size:11.5px;color:var(--mute);margin-top:8px;line-height:1.35}
+.hist{display:flex;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.hist:last-child{border:0}.hist img{width:44px;height:44px;border-radius:8px;object-fit:cover}
+.hist small{color:var(--mute)}
+ol.steps{padding-left:18px;margin:4px 0}ul.bh{padding-left:18px;margin:4px 0}
+footer{flex:none;background:#fff;border-top:1px solid var(--line);padding:6px 8px calc(8px + env(safe-area-inset-bottom))}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px}
+.chips button{flex:none;border:1px solid var(--line);background:#f7faf5;border-radius:999px;padding:7px 12px;font-size:13px;min-height:36px;cursor:pointer;font-family:inherit}
+.comp{display:flex;gap:6px;align-items:center}
+.comp input[type=text]{flex:1;border:1px solid var(--line);border-radius:999px;padding:0 14px;height:44px;font-size:15px;font-family:inherit;outline:none;min-width:0}
+.comp button{width:44px;height:44px;border-radius:50%;border:0;background:#f0f3ed;font-size:19px;cursor:pointer;flex:none}
+.comp button.send{background:var(--green);color:#fff}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="av">🥭</div>
+    <div><h1>MangoRipe-Bot</h1><small>bot • Deteksi Kematangan Mangga</small></div>
+    <div class="sp"></div>
+    <button id="btnReset" title="Mulai ulang percakapan">⟲ Reset</button>
+  </header>
+  <main id="chat" aria-live="polite"></main>
+  <footer>
+    <div class="chips">
+      <button data-cmd="/start">/start</button><button data-cmd="/scan">📸 /scan</button><button data-cmd="/riwayat">📜 /riwayat</button><button data-cmd="/bantuan">❓ /bantuan</button>
+    </div>
+    <div class="comp">
+      <button id="btnGallery" title="Upload foto">📎</button>
+      <input type="text" id="txt" placeholder="Pesan" autocomplete="off">
+      <button id="btnCam" title="Kamera">📷</button>
+      <button class="send" id="btnSend" title="Kirim">➤</button>
+    </div>
+  </footer>
+</div>
+<input type="file" id="fGal" accept="image/*" hidden>
+<input type="file" id="fCam" accept="image/*" capture="environment" hidden>
+
+<script>
+/* ========= Storage aman (localStorage jika ada, fallback memori) ========= */
+const Store=(()=>{let mem={};let ok=true;try{localStorage.setItem('_t','1');localStorage.removeItem('_t')}catch(e){ok=false}
+ return{get(k,d){try{const v=ok?localStorage.getItem(k):mem[k];return v?JSON.parse(v):d}catch(e){return d}},
+ set(k,v){const s=JSON.stringify(v);try{ok?localStorage.setItem(k,s):mem[k]=s}catch(e){mem[k]=s}}}})();
+
+const $=s=>document.querySelector(s);const chat=$('#chat');
+const S={busy:false,batch:[],photo:null,color:null,texture:null,variety:null,last:null};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const now=()=>new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+const scroll=()=>{chat.scrollTop=chat.scrollHeight};
+
+/* ========= UI helpers ========= */
+function keyboard(rows,multi){
+  const kb=document.createElement('div');kb.className='kb'+(multi?' multi':'');
+  rows.forEach(r=>{const rw=document.createElement('div');rw.className='kbrow';
+    r.forEach(b=>{const btn=document.createElement('button');btn.textContent=b.t;
+      btn.onclick=()=>{if(kb.classList.contains('done')&&!multi)return;if(b.keep!==true&&!multi){kb.classList.add('done')}
+        btn.classList.add('sel');if(multi){[...kb.querySelectorAll('button')].forEach(x=>x!==btn&&x.classList.remove('sel'))}b.fn()};
+      rw.appendChild(btn)});kb.appendChild(rw)});return kb}
+function bot(html,o={}){const row=document.createElement('div');row.className='row bot';
+  row.innerHTML=`<div class="av">🥭</div><div class="col"><div class="bubble ${o.cls||''}">${html}<span class="t">${now()}</span></div></div>`;
+  if(o.kb)row.querySelector('.col').appendChild(keyboard(o.kb,o.multi));
+  chat.appendChild(row);scroll();return row}
+function user(html){const row=document.createElement('div');row.className='row user';
+  row.innerHTML=`<div class="col"><div class="bubble">${html}<span class="t">${now()}</span></div></div>`;chat.appendChild(row);scroll()}
+async function typing(ms=700){const row=document.createElement('div');row.className='row bot';
+  row.innerHTML='<div class="av">🥭</div><div class="bubble typing"><i></i><i></i><i></i></div>';chat.appendChild(row);scroll();await sleep(ms);row.remove()}
+async function say(html,o={},ms=650){await typing(ms);return bot(html,o)}
+
+/* ========= Gambar contoh (digambar di canvas, lalu dianalisis sama seperti foto asli) ========= */
+function sampleMango(kind){
+  let seed=kind.length*7919;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
+  const c=document.createElement('canvas');c.width=c.height=480;const g=c.getContext('2d');
+  g.fillStyle='#f3eee4';g.fillRect(0,0,480,480);
+  g.fillStyle='rgba(0,0,0,.12)';g.beginPath();g.ellipse(250,425,135,16,0,0,7);g.fill();
+  const P={mentah:['#a9d65a','#6aa632','#3f7a22'],mengkal:['#e0e45a','#b2c93c','#76a52c'],matang:['#ffd23f','#f6a21e','#e8791a'],terlalu:['#f6a62c','#e27a1c','#b9521a']}[kind];
+  g.save();g.translate(240,240);g.rotate(-.35);
+  g.beginPath();g.moveTo(-10,-150);g.bezierCurveTo(110,-150,170,-20,120,90);g.bezierCurveTo(80,170,-60,170,-120,90);g.bezierCurveTo(-170,0,-110,-150,-10,-150);g.closePath();
+  const gr=g.createRadialGradient(-40,-50,10,0,0,230);gr.addColorStop(0,P[0]);gr.addColorStop(.55,P[1]);gr.addColorStop(1,P[2]);g.fillStyle=gr;g.fill();g.clip();
+  for(let i=0;i<260;i++){g.fillStyle=rnd()>.5?'rgba(255,255,255,.14)':'rgba(0,0,0,.07)';g.beginPath();g.arc(rnd()*400-200,rnd()*400-200,rnd()*3+1,0,7);g.fill()}
+  if(kind==='terlalu'){for(let i=0;i<9;i++){g.fillStyle='rgba(88,48,20,.85)';g.beginPath();g.ellipse(rnd()*220-110,rnd()*200-70,rnd()*16+8,rnd()*12+6,rnd()*3,0,7);g.fill()}}
+  g.fillStyle='rgba(255,255,255,.28)';g.beginPath();g.ellipse(-60,-70,22,50,.5,0,7);g.fill();
+  g.restore();
+  g.save();g.translate(240,240);g.rotate(-.35);g.fillStyle='#6b4a2b';g.fillRect(-16,-162,16,20);g.restore();
+  return c.toDataURL('image/jpeg',.9)}
+
+/* ========= Analisis: HSV masking + skor warna ========= */
+function rgb2hsv(r,g,b){r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;let h=0;
+  if(d){if(mx===r)h=((g-b)/d)%6;else if(mx===g)h=(b-r)/d+2;else h=(r-g)/d+4;h*=60;if(h<0)h+=360}
+  return[h,mx?d/mx:0,mx]}
+const CURVE=[[170,3],[120,6],[95,12],[80,25],[68,42],[58,62],[50,78],[42,90],[34,96],[25,100],[0,100]];
+function ripeOfHue(h){if(h>=340)h=0;for(let i=0;i<CURVE.length-1;i++){const[a,ra]=CURVE[i],[b,rb]=CURVE[i+1];if(h<=a&&h>=b)return rb+(ra-rb)*(h-b)/(a-b)}return h>170?3:100}
+function analyze(img){
+  const W=160,sc=W/Math.max(img.width,img.height),w=Math.max(1,Math.round(img.width*sc)),h=Math.max(1,Math.round(img.height*sc));
+  const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.drawImage(img,0,0,w,h);
+  const d=x.getImageData(0,0,w,h),px=d.data,out=x.createImageData(w,h);
+  let fg=0,sum=0,sv=0,bercak=0,bins={hijau:0,kuning:0,oranye:0,merah:0};
+  for(let i=0;i<px.length;i+=4){const[H,s,v]=rgb2hsv(px[i],px[i+1],px[i+2]);sv+=v;
+    const isFg=s>=.28&&v>=.18&&v<=.98&&(H<=170||H>=340);
+    if(isFg){fg++;sum+=ripeOfHue(H);
+      if(H>=75)bins.hijau++;else if(H>=45)bins.kuning++;else if(H>=18)bins.oranye++;else bins.merah++;
+      if(H>=8&&H<=42&&s>.35&&v<.46)bercak++;
+      out.data[i]=px[i];out.data[i+1]=px[i+1];out.data[i+2]=px[i+2];out.data[i+3]=255}
+    else{out.data[i]=out.data[i+1]=out.data[i+2]=232;out.data[i+3]=255}}
+  const n=w*h,fgR=fg/n;const m=document.createElement('canvas');m.width=w;m.height=h;m.getContext('2d').putImageData(out,0,0);
+  const tot=Math.max(fg,1);
+  return{ok:fgR>=.06,fg:fgR,color:fg?sum/fg:0,bright:sv/n,bercak:bercak/tot,mask:m,
+    dist:{hijau:bins.hijau/tot*100,kuning:bins.kuning/tot*100,oranye:bins.oranye/tot*100,merah:bins.merah/tot*100}}}
+
+/* ========= Hybrid: skor warna + tekstur + varietas ========= */
+const TEX={Keras:30,Empuk:75,Lunak:95};
+function finalize(a,tex,vr){
+  const color=a.color,t=tex?TEX[tex]:null;
+  const score=Math.round(t==null?color:.65*color+.35*t);
+  let label;
+  if((a.bercak>.08&&score>=70)||(score>=96&&tex==='Lunak'))label='Terlalu Matang';
+  else if(score<28)label='Mentah';else if(score<55)label='Mengkal';else if(score<80)label='Matang';else label='Matang Sempurna';
+  const adj={'Harum Manis':5,'Gedong Gincu':3,'Manalagi':-12}[vr]||0;
+  const sweet=Math.max(5,Math.min(95,Math.round(10+.82*score+adj)));
+  const keras=score<30?'Sangat keras':score<55?'Keras – agak keras (mengkal)':score<80?'Agak lunak':'Lunak / empuk';
+  let conf=60+(a.fg>.25?10:0)+(a.bright>.3&&a.bright<.9?10:0)-(a.bercak>.2?5:0);
+  conf+=t==null?0:Math.round((100-Math.abs(color-t))/100*20);
+  return{score,label,sweet,sour:100-sweet,keras,conf:Math.max(50,Math.min(95,conf)),tex,vr}}
+const COL={'Mentah':'#4d9a2f','Mengkal':'#9bb52b','Matang':'#f0a020','Matang Sempurna':'#2e9e5b','Terlalu Matang':'#c0562a'};
+
+/* ========= Resep & tips ========= */
+const R={
+ rujak:{n:'Rujak Mangga',e:'🌶️',b:['Mangga mengkal 2 buah','Gula merah 3 sdm','Cabai rawit 3–5 buah','Asam jawa & garam secukupnya'],s:['Kupas dan iris mangga.','Ulek gula merah, cabai, asam jawa, dan garam.','Campur bumbu dengan mangga, sajikan dingin.']},
+ asinan:{n:'Asinan Mangga',e:'🥗',b:['Mangga mengkal 2 buah','Air 300 ml','Gula 4 sdm, garam 1 sdt','Cuka 2 sdm & cabai']},
+ jus:{n:'Jus Mangga',e:'🥤',b:['Mangga matang 2 buah','Es batu secukupnya','Susu/air 150 ml','Gula/madu sesuai selera'],s:['Kupas, potong dadu mangga.','Blender semua bahan hingga halus.','Sajikan segera.']},
+ sticky:{n:'Mango Sticky Rice',e:'🍚',b:['Beras ketan 200 g','Santan 200 ml','Gula 3 sdm & garam 1/2 sdt','Mangga matang 1–2 buah'],s:['Kukus ketan hingga matang.','Masak santan, gula, garam; siram ke ketan.','Sajikan dengan irisan mangga.']},
+ salad:{n:'Salad Mangga Segar',e:'🥭',b:['Mangga matang sempurna 2 buah','Yogurt 4 sdm','Daun mint','Perasan jeruk nipis'],s:['Potong mangga.','Campur yogurt, jeruk nipis, mint.','Sajikan dingin.']},
+ smoothie:{n:'Smoothie / Es Mangga',e:'🧊',b:['Mangga terlalu matang 2 buah','Yogurt atau susu 150 ml','Es batu / dibekukan'],s:['Buang bagian yang rusak/berair.','Blender semua bahan.','Dinikmati hari ini juga.']},
+ selai:{n:'Selai Mangga',e:'🍯',b:['Mangga terlalu matang 3 buah','Gula 100 g','Perasan jeruk nipis 1 sdm'],s:['Potong dan haluskan mangga.','Masak dengan gula, aduk hingga mengental.','Dinginkan, simpan di wadah bersih.']}};
+asinanFix();function asinanFix(){R.asinan.s=['Kupas dan iris mangga.','Didihkan air, gula, garam, cuka; dinginkan.','Rendam mangga dalam kuah, simpan di kulkas 1 jam.']}
+function recipesFor(label,vr){
+  const base={'Mentah':['rujak','asinan'],'Mengkal':['rujak','asinan','salad'],'Matang':['jus','sticky','salad'],'Matang Sempurna':['salad','sticky','jus'],'Terlalu Matang':['smoothie','selai','jus']}[label];
+  const pref={'Harum Manis':['jus','sticky'],'Gedong Gincu':['salad'],'Manalagi':['rujak','asinan']}[vr]||[];
+  const ripe=label==='Matang'||label==='Matang Sempurna';
+  const list=ripe?[...pref,...base]:base;return[...new Set(list)].slice(0,3)}
+function tipsFor(label){return{
+ 'Mentah':['Simpan di suhu ruang, tempat sejuk & kering.','Peram 2–3 hari: simpan dalam beras agar etilen terserap alami.','Jangan masuk kulkas dulu — pematangan terhambat.'],
+ 'Mengkal':['Cocok untuk rujak/asinan; atau peram 1–2 hari lagi untuk dimakan segar.','Hindari ditekan keras agar tidak memar.'],
+ 'Matang':['Konsumsi dalam 1–2 hari, atau simpan di kulkas.','Pisahkan dari buah lain yang masih mentah.'],
+ 'Matang Sempurna':['Simpan di kulkas bagian bawah dan konsumsi 2–3 hari.','Potongan mangga bisa dibekukan untuk smoothie.'],
+ 'Terlalu Matang':['Olah hari ini juga agar tidak terbuang (food waste).','Buang bagian yang berair/berjamur; potongan sehat bisa dibekukan.']}[label]}
+
+/* ========= Alur percakapan ========= */
+async function welcome(){
+  await say('Halo! Saya <b>MangoRipe-Bot</b> 🥭<br>Kirim foto mangga, dan saya bantu estimasi:<ul class="bh"><li>🍬 Rasa (manis/asam)</li><li>📊 Tingkat kematangan & kekerasan</li><li>🍹 Rekomendasi resep</li><li>🧊 Tips penyimpanan</li></ul><div class="note">Mode prototipe: analisis warna (HSV) berjalan langsung di browser kamu.</div>',{kb:[[{t:'▶ Mulai',fn:askPhoto}]]})}
+async function askPhoto(){
+  S.batch=S.batch||[];
+  await say('<div class="card"><h3>📸 Panduan foto</h3><ul class="tips"><li>☀️ <span>Cahaya terang & merata, hindari silau/bayangan</span></li><li>🤲 <span>Kamera stabil, jarak ±30 cm</span></li><li>🎯 <span>Mangga di tengah, latar polos</span></li></ul></div><br>Pilih cara mengirim foto:',
+   {multi:true,kb:[[{t:'📷 Kamera Langsung',fn:()=>$('#fCam').click()},{t:'🖼 Upload Foto',fn:()=>$('#fGal').click()}],
+   [{t:'🥭 Contoh: Mentah',fn:()=>sample('mentah')},{t:'🥭 Contoh: Mengkal',fn:()=>sample('mengkal')}],
+   [{t:'🥭 Contoh: Matang',fn:()=>sample('matang')},{t:'🥭 Contoh: Terlalu Matang',fn:()=>sample('terlalu')}]]})}
+function sample(k){handlePhoto(sampleMango(k))}
+function loadImg(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src})}
+function thumb(img,sz){const c=document.createElement('canvas');const s=sz/Math.max(img.width,img.height);c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.7)}
+async function handlePhoto(src){
+  if(S.busy)return;S.busy=true;
+  try{
+    const img=await loadImg(src);S.photo=thumb(img,480);S.thumb=thumb(img,96);
+    user(`<img class="ph" src="${S.photo}" alt="Foto mangga">`);
+    await typing(600);bot('⏳ Foto diterima. Memproses dengan <b>HSV masking</b>…');
+    await sleep(500);const a=analyze(img);S.a=a;
+    if(!a.ok){await say('😕 Mangga tidak terdeteksi jelas. Coba foto ulang dengan cahaya terang dan latar polos.',{multi:true,kb:[[{t:'📸 Foto Ulang',fn:askPhoto}]]});S.busy=false;return}
+    const warn=a.bright<.25?'<br>⚠️ Foto terlalu gelap — akurasi bisa turun.':a.bright>.9?'<br>⚠️ Foto terlalu silau — akurasi bisa turun.':'';
+    const row=bot(`<div class="card"><h3>🔧 Hasil Preprocessing (HSV)</h3><canvas class="mask"></canvas><div class="bars">${bar('Hijau',a.dist.hijau,'#5aa332')}${bar('Kuning',a.dist.kuning,'#e8c830')}${bar('Oranye',a.dist.oranye,'#f08a1f')}${bar('Merah',a.dist.merah,'#d0402a')}</div><div class="note">Area mangga terdeteksi: ${Math.round(a.fg*100)}% • Skor warna: <b>${Math.round(a.color)}/100</b>${warn}</div></div>`);
+    const cv=row.querySelector('canvas');cv.width=a.mask.width;cv.height=a.mask.height;cv.getContext('2d').drawImage(a.mask,0,0);
+    await sleep(300);askTexture();
+  }catch(e){bot('Maaf, foto tidak bisa dibaca. Coba foto lain.');S.busy=false}}
+function bar(n,p,c){return`<div class="bar"><span>${n}</span><span class="tr"><i style="width:${Math.round(p)}%;background:${c}"></i></span><span>${Math.round(p)}%</span></div>`}
+async function askTexture(){
+  await say('Bagaimana tekstur mangga saat <b>ditekan lembut</b> dengan jempol?',{kb:[[{t:'🪨 Keras',fn:()=>pickTex('Keras')},{t:'🤏 Empuk',fn:()=>pickTex('Empuk')},{t:'🫠 Lunak',fn:()=>pickTex('Lunak')}],[{t:'Lewati',fn:()=>pickTex(null)}]]})}
+function pickTex(t){S.texture=t;askVariety()}
+async function askVariety(){
+  await say('Varietas mangganya? (opsional, untuk rekomendasi resep lebih tepat)',{kb:[[{t:'Harum Manis',fn:()=>pickVar('Harum Manis')},{t:'Gedong Gincu',fn:()=>pickVar('Gedong Gincu')}],[{t:'Manalagi',fn:()=>pickVar('Manalagi')},{t:'Tidak tahu',fn:()=>pickVar(null)}]]})}
+function pickVar(v){S.variety=v;showResult()}
+
+function gauge(sweet){const ang=-90+sweet*1.8;
+ return`<svg viewBox="0 0 220 130" width="100%" style="max-width:240px;display:block;margin:4px auto 0"><defs><linearGradient id="gg"><stop offset="0" stop-color="#c9d43c"/><stop offset=".5" stop-color="#f3c431"/><stop offset="1" stop-color="#f58a1f"/></linearGradient></defs>
+ <path d="M20 110 A90 90 0 0 1 200 110" fill="none" stroke="url(#gg)" stroke-width="18" stroke-linecap="round"/>
+ <g transform="rotate(${ang} 110 110)"><line x1="110" y1="110" x2="110" y2="38" stroke="#333" stroke-width="4" stroke-linecap="round"/></g><circle cx="110" cy="110" r="8" fill="#333"/>
+ <text x="20" y="128" font-size="12" fill="#6b7280">Asam</text><text x="200" y="128" font-size="12" fill="#6b7280" text-anchor="end">Manis</text></svg>`}
+async function showResult(){
+  const r=finalize(S.a,S.texture,S.variety);S.last=r;
+  await typing(900);
+  bot(`<div class="card"><h3>✅ Hasil Analisis</h3><div class="res"><div class="ring" style="--p:${r.score};--c:${COL[r.label]}"><div>${r.score}%</div></div><div><span class="badge" style="background:${COL[r.label]}">${r.label}</span><div class="note" style="margin-top:6px">Tingkat kematangan (estimasi)</div></div></div>
+  <b>Meter Rasa</b>${gauge(r.sweet)}<div style="text-align:center;font-weight:700">Manis ${r.sweet}% • Asam ${r.sour}%</div>
+  <dl class="kv"><dt>Kekerasan</dt><dd>${r.keras}</dd><dt>Input tekstur</dt><dd>${r.tex||'—'}</dd><dt>Varietas</dt><dd>${r.vr||'Tidak diketahui'}</dd><dt>Keyakinan</dt><dd>${r.conf}% (heuristik)</dd></dl>
+  <div class="note">⚠️ Estimasi berbasis warna + input tekstur; bukan uji laboratorium. Hasil bisa berbeda pada pencahayaan ekstrem.</div></div>`);
+  const ids=recipesFor(r.label,r.vr);
+  await say(`<div class="card"><h3>🍹 Rekomendasi Resep</h3>Sesuai kondisi <b>${r.label}</b>${r.vr?' • '+r.vr:''}. Ketuk untuk lihat resep:</div>`,{multi:true,kb:ids.map(id=>[{t:`${R[id].e} ${R[id].n}`,fn:()=>showRecipe(id)}])},600);
+  await say(`<div class="card"><h3>🧊 Tips Penyimpanan</h3><ul class="bh">${tipsFor(r.label).map(t=>`<li>${t}</li>`).join('')}</ul></div>`,{},600);
+  await say('Seberapa akurat hasil ini menurut kamu?',{kb:[[{t:'👍 Akurat',fn:()=>feedback(true)},{t:'👎 Kurang akurat',fn:()=>feedback(false)}]]},500);
+  S.batch.push({label:r.label,score:r.score});
+  const h=Store.get('mr_hist',[]);h.unshift({ts:Date.now(),label:r.label,score:r.score,sweet:r.sweet,vr:r.vr,tex:r.tex,thumb:S.thumb});Store.set('mr_hist',h.slice(0,20));
+  S.busy=false}
+async function showRecipe(id){const x=R[id];
+  bot(`<b>${x.e} ${x.n}</b><br><b>Bahan:</b><ul class="bh">${x.b.map(i=>`<li>${i}</li>`).join('')}</ul><b>Langkah:</b><ol class="steps">${(x.s||[]).map(i=>`<li>${i}</li>`).join('')}</ol>`)}
+async function feedback(ok){
+  const f=Store.get('mr_fb',[]);f.push({ts:Date.now(),label:S.last.label,score:S.last.score,helpful:ok});Store.set('mr_fb',f);
+  if(ok){await say('Terima kasih atas umpan balik Anda! 🙏',{},400)}
+  else{await say('Terima kasih, kami catat untuk perbaikan model. Apa yang kurang pas?',{kb:[[{t:'Terlalu matang',fn:()=>fbReason('terlalu matang')},{t:'Kurang matang',fn:()=>fbReason('kurang matang')}],[{t:'Rasa tak sesuai',fn:()=>fbReason('rasa tak sesuai')},{t:'Lainnya',fn:()=>fbReason('lainnya')}]]},400)}
+  await next()}
+function fbReason(r){const f=Store.get('mr_fb',[]);if(f.length){f[f.length-1].reason=r;Store.set('mr_fb',f)}}
+async function next(){
+  await say('Mau lanjut?',{kb:[[{t:'➕ Tambah Mangga',fn:askPhoto},{t:'✅ Selesai',fn:finish}]]},500)}
+async function finish(){
+  const b=S.batch,n=b.length,ripe=b.filter(x=>x.label==='Matang'||x.label==='Matang Sempurna').length,over=b.filter(x=>x.label==='Terlalu Matang').length,raw=n-ripe-over;
+  await say(`<div class="card"><h3>📦 Ringkasan Scan</h3><b>${ripe} dari ${n} mangga</b> sudah matang.<ul class="bh"><li>Matang: ${ripe}</li><li>Mentah/mengkal: ${raw}</li><li>Terlalu matang: ${over}</li></ul>${over?'Olah mangga yang terlalu matang hari ini agar tidak terbuang.':'Terima kasih sudah memakai MangoRipe-Bot!'}</div>`,{},600);
+  S.batch=[]}
+async function showHistory(){
+  const h=Store.get('mr_hist',[]);
+  if(!h.length){await say('Belum ada riwayat. Ketik /scan untuk mulai memindai mangga.');return}
+  await say('<div class="card"><h3>📜 Riwayat Deteksi</h3>'+h.slice(0,6).map(x=>`<div class="hist"><img src="${x.thumb}" alt=""><div><b>${x.label} ${x.score}%</b><br><small>${new Date(x.ts).toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})} • Manis ${x.sweet}%${x.vr?' • '+x.vr:''}</small></div></div>`).join('')+'</div>')}
+async function help(){
+  await say('<b>Perintah:</b><ul class="bh"><li>/start — sapaan awal</li><li>/scan — pindai mangga</li><li>/riwayat — riwayat deteksi</li><li>/bantuan — bantuan</li></ul><b>Catatan:</b> prototipe ini menganalisis warna kulit dengan HSV di browser, dipadukan input tekstur. Versi MVP akan memakai MobileNetV2 + FastAPI.')}
+
+/* ========= Perintah & input ========= */
+function command(c){c=c.trim().toLowerCase();user(c.replace(/</g,'&lt;'));
+  if(c==='/start')welcome();else if(c==='/scan'||c==='scan'){S.batch=[];askPhoto()}else if(c==='/riwayat')showHistory();else if(c==='/bantuan'||c==='/help')help();
+  else say('Maaf, saya belum paham 🤔. Coba /scan untuk memindai mangga atau /bantuan.')}
+document.querySelectorAll('[data-cmd]').forEach(b=>b.onclick=()=>command(b.dataset.cmd));
+$('#btnSend').onclick=()=>{const v=$('#txt').value;if(v.trim()){$('#txt').value='';command(v)}};
+$('#txt').addEventListener('keydown',e=>{if(e.key==='Enter')$('#btnSend').click()});
+$('#btnGallery').onclick=()=>$('#fGal').click();$('#btnCam').onclick=()=>$('#fCam').click();
+for(const id of['#fGal','#fCam'])$(id).addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>handlePhoto(r.result);r.readAsDataURL(f);e.target.value=''});
+$('#btnReset').onclick=()=>{chat.innerHTML='';S.busy=false;S.batch=[];welcome()};
+welcome();
+</script>
+</body>
+</html>
